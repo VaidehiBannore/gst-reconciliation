@@ -13,7 +13,7 @@ from openpyxl.formatting.rule import FormulaRule
 # ============================================================
 
 st.set_page_config(
-    page_title="GST Reconciliation System",
+    page_title="GST Reconciliation Tool",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -683,7 +683,7 @@ def create_excel_report(result, summary):
 
 st.markdown("""
     <div class="header-box">
-        <h1 style="margin-top: 0;">📊 GST Reconciliation System</h1>
+        <h1 style="margin-top: 0;">📊 GST Reconciliation Tool</h1>
         <p style="margin-bottom: 0;">Automated GST matching and reconciliation tool</p>
     </div>
 """, unsafe_allow_html=True)
@@ -708,16 +708,14 @@ if "summary_df" not in st.session_state:
 # File Upload Section
 st.markdown("""
     <div class="upload-section">
-        <h3>📁 Upload Your Files</h3>
-        <p style="color: #555; margin-top: 10px; font-size: 0.95rem;">Select both files below to generate GST reconciliation report</p>
+        <h3>📁 Upload data</h3>
     </div>
 """, unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("<h4 style='color: #1e3c72; margin-bottom: 10px;'>📕 Books File</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #666; font-size: 0.9rem; margin: -10px 0 10px 0;'>Your purchase ledger</p>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #1e3c72; margin-bottom: 10px;'>📊 Data as per accounting records</h4>", unsafe_allow_html=True)
     books_file = st.file_uploader(
         "Select Books File (Excel format)",
         type=["xls", "xlsx"],
@@ -728,8 +726,7 @@ with col1:
         st.success(f"✅ {books_file.name} uploaded ({books_file.size/1024:.1f} KB)")
 
 with col2:
-    st.markdown("<h4 style='color: #1e3c72; margin-bottom: 10px;'>📗 GST B2B File</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #666; font-size: 0.9rem; margin: -10px 0 10px 0;'>GSTR-2B export from GST Portal</p>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #1e3c72; margin-bottom: 10px;'>📊 Data as per GSTR-2B</h4>", unsafe_allow_html=True)
     gst_file = st.file_uploader(
         "Select GSTR-2B File (Excel format)",
         type=["xlsx"],
