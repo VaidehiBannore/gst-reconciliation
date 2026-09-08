@@ -239,11 +239,38 @@ def find_column(df, names, required=False):
 # ============================================================
 
 def detect_books_header(raw):
+    """Multiple strategy approach for detecting Books header"""
+    
+    # Strategy 1: Look for Date + Particulars combination
     for i in range(min(30, len(raw))):
         vals = {norm_key(x) for x in raw.iloc[i].tolist()}
         if "DATE" in vals and "PARTICULARS" in vals:
             return i
-    raise RuntimeError("Could not detect Books header row. Check file format.")
+    
+    # Strategy 2: Look for Date + Party Name
+    for i in range(min(30, len(raw))):
+        vals = {norm_key(x) for x in raw.iloc[i].tolist()}
+        if "DATE" in vals and ("PARTY" in vals or "SUPPLIER" in vals):
+            return i
+    
+    # Strategy 3: Look for Date column alone
+    for i in range(min(30, len(raw))):
+        vals = {norm_key(x) for x in raw.iloc[i].tolist()}
+        if "DATE" in vals and any(k in vals for k in ["INVOICE", "BILL", "AMOUNT"]):
+            return i
+    
+    raise RuntimeError(
+        "❌ Could not detect Books file header row.\n\n"
+        "📋 File Format Issues:\n"
+        "• Headers not in first visible row\n"
+        "• Missing Date column\n"
+        "• Missing Party/Particulars column\n\n"
+        "✅ How to Fix:\n"
+        "1. Open file in Excel\n"
+        "2. Ensure first row has: Date, Particulars/Party, Invoice No, Amount\n"
+        "3. Delete any empty rows above headers\n"
+        "4. Save and try again"
+    )
 
 def row_tokens(raw, row_no):
     return {norm_key(x) for x in raw.iloc[row_no].tolist()}
@@ -683,17 +710,15 @@ def create_excel_report(result, summary):
 
 st.markdown("""
     <div class="header-box">
-        <h1 style="margin-top: 0;">📊 GST Reconciliation Tool</h1>
-        <p style="margin-bottom: 0;">Automated GST matching and reconciliation tool</p>
+        <h1 style="margin-top: 0;">GST Reconciliation Tool</h1>
+        <p style="margin-bottom: 0;">Automated GSTR-2B reconciliation system</p>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
     <div class="info-box">
         <strong>ℹ️ About This Tool:</strong><br>
-        This system automatically matches invoices from your Books with GSTR-2B data. 
-        Upload both files to generate a detailed reconciliation report with mismatches, 
-        taxes, and amount differences highlighted.
+        An automated solution that compares accounting records with GSTR-2B data to identify discrepancies and provide detailed insights into mismatches, tax differences and unreconciled invoices.
     </div>
 """, unsafe_allow_html=True)
 
@@ -777,7 +802,18 @@ if generate_report:
             gst_raw = pd.read_excel(gst_file, sheet_name=0, header=None)
             h1, h2 = detect_gst_headers(gst_raw)
             if h1 is None:
-                raise RuntimeError("Could not detect GST file headers")
+                raise RuntimeError(
+                    "❌ Could not detect GSTR-2B file format.\n\n"
+                    "📋 File Format Issues:\n"
+                    "• Not a standard GSTR-2B export from GST Portal\n"
+                    "• File has been manually edited\n"
+                    "• Missing standard columns (GSTIN, Invoice No, Date, Amount)\n\n"
+                    "✅ How to Fix:\n"
+                    "1. Download fresh GSTR-2B from: www.gstreturn.gov.in\n"
+                    "2. Login → RETURNS → GSTR-2B → Download B2B\n"
+                    "3. Do NOT edit the file\n"
+                    "4. Use file as-is from portal"
+                )
             headers = build_gst_headers(gst_raw, h1, h2)
             data_start = (h2 + 1) if h2 is not None else (h1 + 1)
             gst = gst_raw.iloc[data_start:].copy()
